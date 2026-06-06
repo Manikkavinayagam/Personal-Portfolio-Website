@@ -1702,6 +1702,7 @@
   }
 }
     /* ===== RESUME MODAL ===== */
+/* ===== RESUME MODAL ===== */
 .resume-modal {
   position: fixed;
   inset: 0;
@@ -1709,7 +1710,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 1rem;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1734,13 +1735,14 @@
   border-radius: var(--border-radius-lg);
   width: 100%;
   max-width: 1000px;
+  height: 90vh;
   max-height: 90vh;
-  overflow: hidden;
   z-index: 2;
   box-shadow: var(--shadow-lg), var(--shadow-glow);
   animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 @keyframes modalSlideIn {
@@ -1782,11 +1784,12 @@
 }
 
 .resume-header {
-  padding: 2rem 2rem 1.5rem;
+  padding: 2rem;
   background: linear-gradient(135deg, 
     rgba(59, 130, 246, 0.1) 0%, 
     rgba(139, 92, 246, 0.1) 100%);
   border-bottom: 1px solid var(--card-border);
+  flex-shrink: 0;
 }
 
 .resume-header h3 {
@@ -1806,17 +1809,40 @@
 
 .resume-viewer {
   flex: 1;
-  min-height: 500px;
+  min-height: 400px;
   background: var(--bg-primary);
-  overflow: hidden;
+  overflow: auto;
+  position: relative;
 }
 
-.resume-iframe {
+.resume-embed {
   width: 100%;
   height: 100%;
-  min-height: 500px;
+  min-height: 600px;
   border: none;
-  background: white;
+  display: block;
+}
+
+.resume-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.fallback-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.resume-fallback h4 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
 }
 
 .resume-actions {
@@ -1827,6 +1853,10 @@
   gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
 }
 
 .resume-actions .btn {
@@ -1838,23 +1868,20 @@
   background: rgba(0, 0, 0, 0.6);
 }
 
-[data-theme="light"] .resume-iframe {
-  background: #ffffff;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .resume-modal {
-    padding: 1rem;
+    padding: 0;
   }
   
   .resume-modal-content {
-    max-height: 95vh;
-    border-radius: var(--border-radius);
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
   }
   
   .resume-header {
-    padding: 1.5rem 1.5rem 1rem;
+    padding: 1.5rem;
   }
   
   .resume-header h3 {
@@ -1862,11 +1889,15 @@
   }
   
   .resume-viewer {
-    min-height: 400px;
+    min-height: 300px;
+  }
+  
+  .resume-embed {
+    min-height: 500px;
   }
   
   .resume-actions {
-    padding: 1rem 1.5rem;
+    padding: 1rem;
     flex-direction: column;
   }
   
@@ -1875,14 +1906,27 @@
   }
 }
 
-/* Animation for modal content */
-.resume-modal.active .resume-modal-content {
-  animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 /* Prevent body scroll when modal is open */
 body.modal-open {
   overflow: hidden;
+}
+
+/* Custom scrollbar for resume viewer */
+.resume-viewer::-webkit-scrollbar {
+  width: 8px;
+}
+
+.resume-viewer::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+.resume-viewer::-webkit-scrollbar-thumb {
+  background: var(--accent-primary);
+  border-radius: 4px;
+}
+
+.resume-viewer::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-secondary);
 }
 
   </style>
@@ -2525,27 +2569,41 @@ body.modal-open {
   </button>
 </div>
 
-<!-- Add this Resume Modal after the contact section (before footer) -->
+<!-- Replace the entire resume modal section with this improved version -->
 <div id="resumeModal" class="resume-modal">
   <div class="resume-modal-overlay" onclick="closeResumeModal()"></div>
   <div class="resume-modal-content">
     <button class="resume-close-btn" onclick="closeResumeModal()" aria-label="Close resume">
       ✕
     </button>
+    
     <div class="resume-header">
       <h3>Manikkavinayagam M - Resume</h3>
       <p>Computer Science & Design Student</p>
     </div>
+    
     <div class="resume-viewer">
-      <iframe 
-        src="./logos/Resume.pdf" 
-        title="Resume PDF"
-        class="resume-iframe"
-      ></iframe>
+      <!-- Try PDF embed first -->
+      <embed 
+        src="./logos/Resume.pdf#toolbar=0&navpanes=0" 
+        type="application/pdf"
+        class="resume-embed"
+        id="resumeEmbed"
+      >
+      <!-- Fallback message -->
+      <div class="resume-fallback" id="resumeFallback" style="display: none;">
+        <div class="fallback-icon">📄</div>
+        <h4>Unable to display PDF</h4>
+        <p>Please download the resume to view it</p>
+      </div>
     </div>
+    
     <div class="resume-actions">
       <a href="./logos/Resume.pdf" download class="btn primary">
         ⬇️ Download Resume
+      </a>
+      <a href="./logos/Resume.pdf" target="_blank" class="btn secondary">
+        🔗 Open in New Tab
       </a>
       <button onclick="closeResumeModal()" class="btn secondary">
         Close
@@ -3029,16 +3087,29 @@ document.querySelectorAll('.project-video-container video').forEach(video => {
     console.log('🚀 Ready to impress recruiters!');
 
     // ===== RESUME MODAL FUNCTIONS =====
+// ===== RESUME MODAL FUNCTIONS =====
 function openResumeModal() {
   const modal = document.getElementById('resumeModal');
+  const embed = document.getElementById('resumeEmbed');
+  const fallback = document.getElementById('resumeFallback');
+  
   modal.classList.add('active');
   document.body.classList.add('modal-open');
   
-  // Prevent cursor from interfering
+  // Hide cursor in modal
   if (!('ontouchstart' in window)) {
     cursor.style.display = 'none';
     cursorDot.style.display = 'none';
   }
+  
+  // Check if PDF loads, show fallback if not
+  setTimeout(() => {
+    // Try to detect if embed failed
+    if (embed && embed.getSVGDocument() === null) {
+      embed.style.display = 'none';
+      fallback.style.display = 'flex';
+    }
+  }, 2000);
 }
 
 function closeResumeModal() {
@@ -3051,6 +3122,16 @@ function closeResumeModal() {
     cursor.style.display = 'block';
     cursorDot.style.display = 'block';
   }
+  
+  // Reset fallback after closing
+  setTimeout(() => {
+    const embed = document.getElementById('resumeEmbed');
+    const fallback = document.getElementById('resumeFallback');
+    if (embed && fallback) {
+      embed.style.display = 'block';
+      fallback.style.display = 'none';
+    }
+  }, 300);
 }
 
 // Close modal on Escape key
